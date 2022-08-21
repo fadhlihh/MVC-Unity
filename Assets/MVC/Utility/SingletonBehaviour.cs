@@ -4,26 +4,30 @@ namespace MVC.Utility
 {
     public class SingletonBehaviour<T> : MonoBehaviour where T : SingletonBehaviour<T>
     {
+        private static readonly object _lock = new object();
         private static T _instance;
         public static T Instance
         {
             get
             {
-                if (!_instance)
+                lock (_lock)
                 {
-                    T instance = GameObject.FindObjectOfType<T>();
-                    if (instance)
+                    if (!_instance)
                     {
-                        _instance = instance;
+                        T instance = GameObject.FindObjectOfType<T>();
+                        if (instance)
+                        {
+                            _instance = instance;
+                        }
+                        else
+                        {
+                            GameObject instanceObject = new GameObject($"[Loader] {typeof(T).Name}");
+                            _instance = instanceObject.AddComponent<T>();
+                            GameObject.DontDestroyOnLoad(instanceObject);
+                        }
                     }
-                    else
-                    {
-                        GameObject instanceObject = new GameObject($"[Loader] {typeof(T).Name}");
-                        _instance = instanceObject.AddComponent<T>();
-                        GameObject.DontDestroyOnLoad(instanceObject);
-                    }
+                    return _instance;
                 }
-                return _instance;
             }
         }
     }

@@ -1,11 +1,31 @@
+using System.Collections;
+using MVC.Utility;
+
 namespace MVC.Component
 {
-    public class Controller : NonBehaviourController
+    public class Controller<TController> : IController
+    where TController : Controller<TController>
     {
-
+        public virtual IEnumerator Initialize()
+        {
+            DependencyInjection.Instance.RegisterDependencies(typeof(TController), this);
+            yield return null;
+        }
+        public virtual IEnumerator Finalize()
+        {
+            DependencyInjection.Instance.InjectDependencies(this);
+            yield return null;
+        }
+        public virtual IEnumerator Terminate()
+        {
+            DependencyInjection.Instance.UnregisterDependencies(typeof(TController));
+            yield return null;
+        }
     }
 
-    public class Controller<TModel> : NonBehaviourController where TModel : Model, new()
+    public class Controller<TController, TModel> : Controller<TController>
+    where TController : Controller<TController, TModel>
+    where TModel : Model, new()
     {
         private TModel _model;
 
@@ -15,7 +35,8 @@ namespace MVC.Component
         }
     }
 
-    public class Controller<TModel, TIModel> : NonBehaviourController
+    public class Controller<TController, TModel, TIModel> : Controller<TController>
+    where TController : Controller<TController, TModel, TIModel>
     where TModel : Model, TIModel, new()
     where TIModel : IModel
     {
@@ -35,7 +56,9 @@ namespace MVC.Component
         }
     }
 
-    public class ObjectController<TView> : NonBehaviourController where TView : View
+    public class ObjectController<TController, TView> : Controller<TController>
+    where TController : ObjectController<TController, TView>
+    where TView : View
     {
         private TView _view;
 
@@ -45,7 +68,8 @@ namespace MVC.Component
         }
     }
 
-    public class ObjectController<TModel, TView> : NonBehaviourController
+    public class ObjectController<TController, TModel, TView> : Controller<TController>
+    where TController : ObjectController<TController, TModel, TView>
     where TModel : Model, new()
     where TView : View
 
@@ -64,7 +88,8 @@ namespace MVC.Component
         }
     }
 
-    public class ObjectController<TModel, TIModel, TView> : NonBehaviourController
+    public class ObjectController<TController, TModel, TIModel, TView> : Controller<TController>
+    where TController : ObjectController<TController, TModel, TIModel, TView>
     where TModel : Model, TIModel, new()
     where TIModel : IModel
     where TView : View<TIModel>

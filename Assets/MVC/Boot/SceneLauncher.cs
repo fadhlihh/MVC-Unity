@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using MVC.Utility;
+using MVC.Component;
 
 namespace MVC.Boot
 {
@@ -19,5 +20,7 @@ namespace MVC.Boot
             sceneLoader.LoadScene(SceneName);
             yield return null;
         }
+
+        protected abstract IController[] GetControllers();
     }
 }
